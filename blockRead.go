@@ -40,4 +40,7 @@ func main() {
 			fmt.Print(".")
 		}
 	}
+	fmt.Println("")
+	db.Find(nil).Sort("-count").One(&retval)
+	fmt.Println("End: ", retval["count"])
 }

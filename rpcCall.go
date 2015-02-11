@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	//	"fmt"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -31,6 +31,7 @@ func Call(cmd string, params interface{}) interface{} {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
+		fmt.Println(req)
 		panic(err)
 	}
 	defer resp.Body.Close()
@@ -40,6 +41,7 @@ func Call(cmd string, params interface{}) interface{} {
 	var dat map[string]interface{}
 
 	if err := json.Unmarshal(body, &dat); err != nil {
+		fmt.Println(body)
 		panic(err)
 	}
 

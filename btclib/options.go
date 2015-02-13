@@ -1,9 +1,12 @@
-package main
+// options.go
+package btclib
 
 const (
 	//	DnsSeed ['dnsseed.bluematt.me', 'dnsseed.bitcoin.dashjr.org', 'seed.bitcoinstats.com', 'bitseed.xf2.org']
 	User     = "info"
 	Password = "passw0rd"
+	DBHost   = "10.39.81.90:49153"
+	BitcoinD = "http://10.39.81.85:8332"
 )
 
 type Options struct {

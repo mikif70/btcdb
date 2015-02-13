@@ -25,7 +25,7 @@ func GetTransaction(tx *string) interface{} {
 
 // TransactionInsert insert all transaction to the DB
 func TransactionInsert(tx string) {
-	session, err := mgo.Dial(DBHost)
+	session, err := mgo.Dial(MongoD)
 	if err != nil {
 		panic(err)
 	}
@@ -43,13 +43,13 @@ func txInsert(data string, db *mgo.Collection) {
 	}
 	err := db.Insert(retval.(map[string]interface{}))
 	if err != nil {
+		fmt.Println("Error tx insert: ", err)
 		fmt.Println(data)
-		fmt.Println(err)
 	}
 }
 
 func AllTxInsert() {
-	session, err := mgo.Dial(DBHost)
+	session, err := mgo.Dial(MongoD)
 	if err != nil {
 		panic(err)
 	}

@@ -32,7 +32,7 @@ func callCmd(cmd string, params interface{}) (interface{}, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(req)
+		fmt.Println("Error bitcoind call: ", req)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -42,7 +42,7 @@ func callCmd(cmd string, params interface{}) (interface{}, error) {
 	var dat map[string]interface{}
 
 	if err := json.Unmarshal(body, &dat); err != nil {
-		fmt.Println(body)
+		fmt.Println("Error unmarshal: ", body)
 		return nil, err
 	}
 

@@ -24,13 +24,10 @@ func GetTransaction(tx *string) interface{} {
 }
 
 // TransactionInsert insert all transaction to the DB
-func TransactionInsert(tx string) {
-	session, err := mgo.Dial(MongoD)
-	if err != nil {
-		panic(err)
-	}
+func TxInsert(tx string) {
+
+	session, _, db := openDB()
 	defer session.Close()
-	db := session.DB("btc").C("tx")
 
 	txInsert(tx, db)
 }
@@ -49,43 +46,43 @@ func txInsert(data string, db *mgo.Collection) {
 }
 
 func AllTxInsert() {
-	session, err := mgo.Dial(MongoD)
-	if err != nil {
-		panic(err)
-	}
+
+	session, db, tx := openDB()
+
 	defer session.Close()
-	tx := session.DB("btc").C("tx")
-	db := session.DB("btc").C("block")
 
 	var rettx map[string]interface{}
 	tx.Find(nil).Sort("-_id").One(&rettx)
 
-	var txblock map[string]interface{}
-	db.Find(bson.M{"tx": rettx["txid"]}).Sort("-count").One(&txblock)
+	var startBlock int
+	if rettx != nil {
+		var txblock map[string]interface{}
+		db.Find(bson.M{"tx": rettx["txid"]}).Sort("-count").One(&txblock)
+		startBlock = txblock["count"].(int)
+	} else {
+		startBlock = 0
+	}
 
 	var lastblock map[string]interface{}
 	db.Find(nil).Sort("-count").One(&lastblock)
-
-	//	db.Find(bson.M)
-
-	//	fmt.Println(txblock["count"], lastblock["count"], rettx["txid"])
+	var stopBlock = lastblock["count"].(int)
+	//	stopBlock = startBlock + 1000
 
 	var startTime = time.Now()
 
 	var block map[string]interface{}
-	var startBlock = txblock["count"].(int)
-	var stopBlock = lastblock["count"].(int)
-	//	stopBlock = startBlock + 1000
 	for i := startBlock; i < stopBlock; i++ {
 		db.Find(bson.M{"count": i}).One(&block)
 		var arr = block["tx"].([]interface{})
 		var tot = len(arr)
 		for a := 0; a < tot; a++ {
-			TransactionInsert(arr[a].(string))
-			//			txInsert(arr[a].(string), tx)
+			//			TxInsert(arr[a].(string))
+			txInsert(arr[a].(string), tx)
 		}
+		fmt.Print(".")
 	}
 
+	fmt.Println("")
 	var stopTime = time.Since(startTime)
 	fmt.Println(stopTime)
 }

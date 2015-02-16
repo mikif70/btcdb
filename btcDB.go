@@ -22,11 +22,12 @@ func main() {
 	case "tx":
 		fmt.Printf("TX of %s: %s\n", *opt, btclib.GetTransaction(opt))
 	case "pushtx":
-		btclib.TransactionInsert(*opt)
+		btclib.TxInsert(*opt)
 	case "alltx":
 		btclib.AllTxInsert()
+	case "blocktx":
+		btclib.BlockTxInsert()
 	default:
 		btclib.BlockInsert()
 	}
-
 }

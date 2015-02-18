@@ -40,9 +40,8 @@ func callCmd(cmd string, params interface{}) (interface{}, error) {
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	var dat map[string]interface{}
-
 	if err := json.Unmarshal(body, &dat); err != nil {
-		fmt.Println("Error unmarshal: ", body)
+		fmt.Println("Error unmarshal: ", body, err)
 		return nil, err
 	}
 

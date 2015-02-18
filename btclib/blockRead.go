@@ -32,19 +32,25 @@ func BlockInsert() {
 
 	var startTime = time.Now()
 
-	paramsInt := make([]int, 1)
-	paramsString := make([]string, 1)
+	params := make([]interface{}, 1)
+	blocks := make([]interface{}, 0)
 	for i := start; i < stop; i++ {
-		paramsInt[0] = i
-		var hash, _ = callCmd("getblockhash", paramsInt)
-		paramsString[0] = hash.(string)
-		var block, _ = callCmd("getblock", paramsString)
+		params[0] = i
+		var hash, _ = callCmd("getblockhash", params)
+		params[0] = hash.(string)
+		var block, _ = callCmd("getblock", params)
 		var newBlock = block.(map[string]interface{})
 		newBlock["count"] = int(i)
-		err := db.Insert(newBlock)
-		if err != nil {
-			fmt.Println("Error block insert: ", err)
-			fmt.Println(i)
+		blocks = append(blocks, newBlock)
+		if len(blocks) >= maxBulk {
+			err := db.Insert(blocks...)
+			//err := db.Insert(newBlock)
+			if err != nil {
+				fmt.Println("")
+				fmt.Println("Error block insert: ", err)
+				fmt.Println(i)
+			}
+			blocks = make([]interface{}, 0)
 		}
 		fmt.Print(".")
 	}
@@ -78,10 +84,10 @@ func BlockTxInsert() {
 		}
 		var arr = newBlock["tx"].([]interface{})
 
-		var tot = len(arr)
-		for a := 0; a < tot; a++ {
-			txInsert(arr[a].(string), tx)
-		}
+		//		var tot = len(arr)
+		//		for a := 0; a < tot; a++ {
+		txInsert(tx, i, arr)
+		//		}
 		fmt.Print(".")
 	}
 	fmt.Println("")

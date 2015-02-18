@@ -9,39 +9,55 @@ import (
 )
 
 // GetTransaction get a transaction with hash = tx
-func GetTransaction(tx *string) interface{} {
+func GetTransaction(tx interface{}) map[string]interface{} {
 	params := make([]string, 1)
-	params[0] = *tx
-	var rettx, _ = callCmd("getrawtransaction", params)
+	params[0] = tx.(string)
+	var rettx, err = callCmd("getrawtransaction", params)
 	if rettx == nil {
+		fmt.Println("Error getraw: ", params, err)
 		return nil
 	}
 	params[0] = rettx.(string)
 	var strtx, _ = callCmd("decoderawtransaction", params)
-	//	fmt.Println(strtx, err2)
+	//	fmt.Println(strtx)
 
-	return strtx
+	return strtx.(map[string]interface{})
+	//	return strtx
 }
 
 // TransactionInsert insert all transaction to the DB
+/*
 func TxInsert(tx string) {
 
 	session, _, db := openDB()
 	defer session.Close()
 
-	txInsert(tx, db)
-}
+	txs := make([]interface{}, 1)
+	txs[0] = tx
 
-func txInsert(data string, db *mgo.Collection) {
-	var retval = GetTransaction(&data)
-	if retval == nil {
-		fmt.Println("KO")
-		return
+	txInsert(db, txs[:])
+}
+*/
+
+func txInsert(db *mgo.Collection, count int, data ...[]interface{}) {
+	tot := len(data[0])
+	txs := make([]interface{}, 0)
+	var retval = make(map[string]interface{})
+	for i := 0; i < tot; i++ {
+		retval = GetTransaction(data[0][i])
+		if retval == nil {
+			fmt.Println("KO")
+			continue
+		}
+		retval["count"] = count
+		txs = append(txs, retval)
 	}
-	err := db.Insert(retval.(map[string]interface{}))
-	if err != nil {
-		fmt.Println("Error tx insert: ", err)
-		fmt.Println(data)
+	if len(txs) > 0 {
+		err := db.Insert(txs...)
+		if err != nil {
+			fmt.Println("Error tx insert: ", err)
+			fmt.Println(data)
+		}
 	}
 }
 
@@ -53,14 +69,15 @@ func AllTxInsert() {
 
 	var rettx map[string]interface{}
 	tx.Find(nil).Sort("-_id").One(&rettx)
+	fmt.Println(rettx)
 
-	var startBlock int
+	var startBlock = 0
 	if rettx != nil {
 		var txblock map[string]interface{}
 		db.Find(bson.M{"tx": rettx["txid"]}).Sort("-count").One(&txblock)
-		startBlock = txblock["count"].(int)
-	} else {
-		startBlock = 0
+		if txblock != nil {
+			startBlock = txblock["count"].(int)
+		}
 	}
 
 	var lastblock map[string]interface{}
@@ -74,11 +91,11 @@ func AllTxInsert() {
 	for i := startBlock; i < stopBlock; i++ {
 		db.Find(bson.M{"count": i}).One(&block)
 		var arr = block["tx"].([]interface{})
-		var tot = len(arr)
-		for a := 0; a < tot; a++ {
-			//			TxInsert(arr[a].(string))
-			txInsert(arr[a].(string), tx)
-		}
+		//		var tot = len(arr)
+		//		for a := 0; a < tot; a++ {
+		//			TxInsert(arr[a].(string))
+		txInsert(tx, i, arr)
+		//		}
 		fmt.Print(".")
 	}
 

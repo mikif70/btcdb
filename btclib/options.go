@@ -3,12 +3,14 @@ package btclib
 
 const (
 	//	DnsSeed ['dnsseed.bluematt.me', 'dnsseed.bitcoin.dashjr.org', 'seed.bitcoinstats.com', 'bitseed.xf2.org']
-	User           = "info"
-	Password       = "passw0rd"
-	MongoD         = "10.39.81.90:49153"
+	User     = "info"
+	Password = "passw0rd"
+	//	MongoD         = "10.39.81.90:49153"
+	MongoD         = "10.39.81.90:27017"
 	Riak           = "http://10.39.80.181:8098"
 	BitcoinD       = "http://10.39.81.85:8332"
 	maxConcurrency = 10
+	maxBulk        = 50
 )
 
 type Options struct {

@@ -27,7 +27,7 @@ func startStop(db *mgo.Collection) (int, int) {
 
 	var start int
 	if retval != nil {
-		start = retval["count"].(int)
+		start = retval["count"].(int) + 1
 	} else {
 		start = 0
 	}

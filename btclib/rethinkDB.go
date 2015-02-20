@@ -72,6 +72,9 @@ func InsertRt() {
 	for i := start; i < stop; i++ {
 		params[0] = i
 		var hash, _ = callCmd("getblockhash", params)
+		if hash == nil {
+			continue
+		}
 		params[0] = hash.(string)
 		var block, _ = callCmd("getblock", params)
 		var newBlock = block.(map[string]interface{})

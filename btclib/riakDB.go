@@ -2,12 +2,36 @@
 package btclib
 
 import (
-	"bytes"
-	"encoding/json"
+	//	"bytes"
+	//	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	//	"io/ioutil"
+	"log"
+	//	"net/http"
+
+	"github.com/riaken/riaken-core"
 )
+
+func OpenRiak() {
+	client := riaken_core.NewClient(Riak, 5)
+	if err := client.Dial(); err != nil {
+		log.Fatal(err.Error()) // all nodes are down
+	}
+	defer client.Close()
+	session := client.Session()
+	defer session.Release()
+
+	if !session.Ping() {
+		log.Fatal("no ping response")
+	}
+
+	buckets, err := session.ListBuckets()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	fmt.Println(buckets)
+}
 
 func riakTxInsert() {
 
@@ -17,6 +41,7 @@ func riakBlockInsert() {
 
 }
 
+/*
 func riackInsert(data interface{}) (interface{}, error) {
 
 	jrequest, _ := json.Marshal(data)
@@ -42,7 +67,4 @@ func riackInsert(data interface{}) (interface{}, error) {
 
 	return dat["result"], nil
 }
-
-func main() {
-	fmt.Println("Hello World!")
-}
+*/

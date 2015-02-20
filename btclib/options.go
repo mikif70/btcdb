@@ -6,12 +6,14 @@ const (
 	User     = "info"
 	Password = "passw0rd"
 	//	MongoD         = "10.39.81.90:49153"
-	MongoD         = "10.39.81.90:27017"
-	Riak           = "http://10.39.80.181:8098"
-	BitcoinD       = "http://10.39.81.85:8332"
-	maxConcurrency = 10
-	maxBulk        = 50
+	MongoD   = "10.39.81.90:27017"
+	BitcoinD = "http://10.39.81.85:8332"
+	//	maxConcurrency = 10
+	maxBulk = 100
 )
+
+var Riak = []string{"10.39.80.181:8087", "10.39.80.182:8087", "10.39.80.183:8087", "10.39.80.184:8087", "10.39.80.185:8087", "10.39.80.186:8087"}
+var Rethink = []string{"10.39.81.90:28115", "10.39.81.90:28215", "10.39.81.90:28315", "10.39.81.90:28415", "10.39.81.90:28515"}
 
 type Options struct {
 	User     string

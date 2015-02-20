@@ -4,7 +4,7 @@ package btclib
 import (
 	//	"encoding/json"
 	"fmt"
-	//	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2"
 	"time"
 	//	"gopkg.in/mgo.v2/bson"
 	//	"sync"
@@ -21,6 +21,10 @@ func BlockHash(block int) string {
 	params[0] = block
 	var hash, _ = callCmd("getblockhash", params)
 	return hash.(string)
+}
+
+func blockInsert(db *mgo.Collection, count int, data ...[]interface{}) {
+
 }
 
 func BlockInsert() {

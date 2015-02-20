@@ -73,10 +73,17 @@ func InsertRt() {
 		params[0] = i
 		var hash, _ = callCmd("getblockhash", params)
 		if hash == nil {
+			fmt.Println()
+			fmt.Println(i)
 			continue
 		}
 		params[0] = hash.(string)
 		var block, _ = callCmd("getblock", params)
+		if block == nil {
+			fmt.Println()
+			fmt.Println(i)
+			continue
+		}
 		var newBlock = block.(map[string]interface{})
 		newBlock["count"] = int(i)
 		blocks = append(blocks, newBlock)

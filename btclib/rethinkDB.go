@@ -78,7 +78,7 @@ func InsertRt() {
 		newBlock["count"] = int(i)
 		blocks = append(blocks, newBlock)
 		if len(blocks) >= maxBulk {
-			insertRT(session, blocks)
+			go insertRT(session, blocks)
 			blocks = make([]interface{}, 0)
 		}
 		fmt.Print(".")

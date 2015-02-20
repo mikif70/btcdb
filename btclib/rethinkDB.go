@@ -36,13 +36,11 @@ func openRT() *rt.Session {
 		Address:  Rethink[0],
 		Database: "btc",
 		MaxIdle:  10,
-		MaxOpen:  20,
+		MaxOpen:  30,
 	})
 	if err != nil {
 		log.Fatalln("Open error: ", err.Error())
 	}
-
-	session.SetMaxOpenConns(10)
 
 	return session
 }

@@ -48,10 +48,11 @@ func insertRT(session *rt.Session, table string, data []interface{}) {
 	resp, err := rt.Table(table).Insert(data).RunWrite(session)
 	if err != nil {
 		fmt.Println()
-		fmt.Println("Write Error: ", err.Error())
+		fmt.Println("Write Error: ", err.Error(), resp)
+
 	}
 
-	fmt.Println("Inserted: ", resp.Inserted)
+	//	fmt.Println("Inserted: ", resp.Inserted)
 }
 
 func getTxStartStop(session *rt.Session) (int, int) {

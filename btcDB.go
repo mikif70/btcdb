@@ -40,8 +40,10 @@ func main() {
 		btclib.BlockTxInsert()
 	case "rttest":
 		btclib.TestRT()
-	case "rtinsert":
-		btclib.InsertRt()
+	case "rtblock":
+		btclib.InsertBlocksRt()
+	case "rttx":
+		btclib.InsertTxRt()
 	default:
 		btclib.BlockInsert()
 	}

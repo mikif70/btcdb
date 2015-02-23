@@ -8,23 +8,6 @@ import (
 	"time"
 )
 
-// GetTransaction get a transaction with hash = tx
-func GetTransaction(tx interface{}) map[string]interface{} {
-	params := make([]string, 1)
-	params[0] = tx.(string)
-	var rettx, err = callCmd("getrawtransaction", params)
-	if rettx == nil {
-		fmt.Println("Error getraw: ", params, err)
-		return nil
-	}
-	params[0] = rettx.(string)
-	var strtx, _ = callCmd("decoderawtransaction", params)
-	//	fmt.Println(strtx)
-
-	return strtx.(map[string]interface{})
-	//	return strtx
-}
-
 // TransactionInsert insert all transaction to the DB
 /*
 func TxInsert(tx string) {

@@ -22,12 +22,10 @@ func TestRT() {
 
 	session.SetMaxOpenConns(5)
 
-	resp, err := rt.Table("test").Insert("test").RunWrite(session)
+	_, err = rt.Table("test").Insert("test").RunWrite(session)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-
-	fmt.Println(resp)
 }
 
 func openRT() *rt.Session {
@@ -45,51 +43,135 @@ func openRT() *rt.Session {
 	return session
 }
 
-func insertRT(session *rt.Session, data []interface{}) {
+func insertRT(session *rt.Session, table string, data []interface{}) {
 
-	_, err := rt.Table("block").Insert(data).RunWrite(session)
+	resp, err := rt.Table(table).Insert(data).RunWrite(session)
 	if err != nil {
 		fmt.Println()
 		fmt.Println("Write Error: ", err.Error())
 	}
 
-	//	fmt.Println(resp)
+	fmt.Println("Inserted: ", resp.Inserted)
 }
 
-func InsertRt() {
+func getTxStartStop(session *rt.Session) (int, int) {
+	bs, err := rt.Table("block").Max("count").Field("count").Run(session)
+	var stop interface{}
+	if err == nil {
+		bs.One(&stop)
+	} else {
+		stop, _ = callCmd("getblockcount", make([]int, 0))
+	}
+
+	tx, err := rt.Table("transaction").Max("count").Field("count").Run(session)
+	var start interface{}
+	if err == nil {
+		tx.One(&start)
+	} else {
+		start = 0.0
+	}
+
+	return int(start.(float64)), int(stop.(float64))
+}
+
+func getBlockStartStop(session *rt.Session) (int, int) {
+	//.db("btc").table("block").max("count").getField("count");
+	var stop, _ = callCmd("getblockcount", make([]int, 0))
+
+	res, _ := rt.Table("block").Max("count").Field("count").Run(session)
+
+	var start interface{}
+	res.One(&start)
+
+	fmt.Println(start, stop)
+
+	return int(start.(float64)), int(stop.(float64))
+}
+
+func getTransactions(txArray []interface{}, count int) (txs []interface{}) {
+	tot := len(txArray)
+	txs = make([]interface{}, 0)
+	var retval = make(map[string]interface{})
+
+	for i := 0; i < tot; i++ {
+		retval = GetTransaction(txArray[i])
+		if retval == nil {
+			fmt.Println("Error")
+			continue
+		}
+		retval["count"] = count
+		txs = append(txs, retval)
+	}
+
+	return txs
+}
+
+func InsertTxRt() {
+	session := openRT()
+	defer session.Close()
+
+	start, stop := getTxStartStop(session)
+
+	if start < stop {
+		//		params := make([]interface{}, 1)
+		//		txs := make([]interface{}, 0)
+		for i := start; i <= stop; i++ {
+			txArray, err := rt.Table("block").GetAllByIndex("count", i).Field("tx").Run(session)
+			if err != nil {
+				fmt.Println("Error: ", err.Error())
+				continue
+			}
+			var retval []interface{}
+			txArray.One(&retval)
+			txs := getTransactions(retval, i)
+			//			fmt.Printf("%d - %+v\n", i, txs)
+			fmt.Printf("%d\n", i)
+			if len(txs) > 0 {
+				go insertRT(session, "transaction", txs)
+			}
+		}
+	}
+}
+
+func InsertBlocksRt() {
 
 	session := openRT()
 	defer session.Close()
 
-	var blockCount, _ = callCmd("getblockcount", make([]int, 0))
-	start := 0
-	stop := int(blockCount.(float64))
+	start, stop := getBlockStartStop(session)
 
-	params := make([]interface{}, 1)
-	blocks := make([]interface{}, 0)
-	for i := start; i < stop; i++ {
-		params[0] = i
-		var hash, _ = callCmd("getblockhash", params)
-		if hash == nil {
-			fmt.Println()
-			fmt.Println(i)
-			continue
+	if start < stop {
+		params := make([]interface{}, 1)
+		blocks := make([]interface{}, 0)
+		for i := start; i <= stop; i++ {
+			params[0] = i
+			var hash, _ = callCmd("getblockhash", params)
+			if hash == nil {
+				fmt.Println()
+				fmt.Println(i)
+				continue
+			}
+			params[0] = hash.(string)
+			var block, _ = callCmd("getblock", params)
+			if block == nil {
+				fmt.Println()
+				fmt.Println(i)
+				continue
+			}
+			var newBlock = block.(map[string]interface{})
+			newBlock["count"] = int(i)
+			blocks = append(blocks, newBlock)
+			if len(blocks) >= maxBulk {
+				go insertRT(session, "block", blocks)
+				blocks = make([]interface{}, 0)
+			}
+			fmt.Print(".")
 		}
-		params[0] = hash.(string)
-		var block, _ = callCmd("getblock", params)
-		if block == nil {
-			fmt.Println()
-			fmt.Println(i)
-			continue
+		if len(blocks) >= 0 {
+			//		fmt.Println("inserting... ", blocks)
+			insertRT(session, "block", blocks)
+			//		blocks = make([]interface{}, 0)
 		}
-		var newBlock = block.(map[string]interface{})
-		newBlock["count"] = int(i)
-		blocks = append(blocks, newBlock)
-		if len(blocks) >= maxBulk {
-			go insertRT(session, blocks)
-			blocks = make([]interface{}, 0)
-		}
-		fmt.Print(".")
+		fmt.Println("")
 	}
-	fmt.Println("")
 }

@@ -58,6 +58,7 @@ func insertRT(session *rt.Session, table string, data []interface{}) {
 
 func getTxStartStop(session *rt.Session) (int, int) {
 	bs, err := rt.Table("block").Max("count").Field("count").Run(session)
+	defer bs.Close()
 	var stop interface{}
 	if err == nil {
 		bs.One(&stop)
@@ -66,6 +67,7 @@ func getTxStartStop(session *rt.Session) (int, int) {
 	}
 
 	tx, err := rt.Table("transaction").Max("count").Field("count").Run(session)
+	defer tx.Close()
 	var start interface{}
 	if err == nil {
 		tx.One(&start)
@@ -81,6 +83,7 @@ func getBlockStartStop(session *rt.Session) (int, int) {
 	var stop, _ = callCmd("getblockcount", make([]int, 0))
 
 	res, _ := rt.Table("block").Max("count").Field("count").Run(session)
+	defer res.Close()
 
 	var start interface{}
 	res.One(&start)
@@ -131,6 +134,7 @@ func InsertTxRt() {
 			if len(txs) > 0 {
 				go insertRT(session, "transaction", txs)
 			}
+			txArray.Close()
 		}
 	}
 }
@@ -185,10 +189,11 @@ func BlockVerifyRt() {
 	_, stop := getBlockStartStop(session)
 
 	for i := 0; i < stop; i++ {
-		_, err := rt.Table("block").GetAllByIndex("count", i).Field("count").Run(session)
+		resp, err := rt.Table("block").GetAllByIndex("count", i).Field("count").Run(session)
 		if err != nil {
 			fmt.Printf("Error: %d - %s\n", i, err.Error())
 		}
+		resp.Close()
 	}
 
 }

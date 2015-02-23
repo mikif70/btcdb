@@ -4,6 +4,7 @@ package btclib
 import (
 	"fmt"
 	"log"
+	//	"strconv"
 
 	rt "github.com/dancannon/gorethink"
 )
@@ -175,4 +176,19 @@ func InsertBlocksRt() {
 		}
 		fmt.Println("")
 	}
+}
+
+func BlockVerifyRt() {
+	session := openRT()
+	defer session.Close()
+
+	_, stop := getBlockStartStop(session)
+
+	for i := 0; i < stop; i++ {
+		_, err := rt.Table("block").GetAllByIndex("count", i).Field("count").Run(session)
+		if err != nil {
+			fmt.Printf("Error: %d - %s\n", i, err.Error())
+		}
+	}
+
 }

@@ -44,6 +44,8 @@ func main() {
 		btclib.InsertBlocksRt()
 	case "rttx":
 		btclib.InsertTxRt()
+	case "blockverify":
+		btclib.BlockVerifyRt()
 	default:
 		btclib.BlockInsert()
 	}

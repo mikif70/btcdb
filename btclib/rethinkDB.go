@@ -34,8 +34,8 @@ func openRT() *rt.Session {
 	session, err := rt.Connect(rt.ConnectOpts{
 		Address:  Rethink[0],
 		Database: "btc",
-		MaxIdle:  10,
-		MaxOpen:  30,
+		MaxIdle:  5,
+		MaxOpen:  20,
 	})
 	if err != nil {
 		log.Fatalln("Open error: ", err.Error())
@@ -46,11 +46,10 @@ func openRT() *rt.Session {
 
 func insertRT(session *rt.Session, table string, data []interface{}) {
 
-	resp, err := rt.Table(table).Insert(data).RunWrite(session)
+	_, err := rt.Table(table).Insert(data).RunWrite(session)
 	if err != nil {
 		fmt.Println()
-		fmt.Println("Write Error: ", err.Error(), resp)
-
+		fmt.Println("Write Error: ", err.Error())
 	}
 
 	//	fmt.Println("Inserted: ", resp.Inserted)
@@ -83,7 +82,9 @@ func getBlockStartStop(session *rt.Session) (int, int) {
 	//.db("btc").table("block").max("count").getField("count");
 	var stop, _ = callCmd("getblockcount", make([]int, 0))
 
-	res, err := rt.Table("block").Max("count").Field("count").Run(session)
+	res, err := rt.Table("block").MaxIndex("count").Field("count").Run(session)
+
+	//	fmt.Println("Max: ", res, err)
 
 	var start interface{}
 	if err != nil {

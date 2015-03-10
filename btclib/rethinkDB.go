@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	//	"strconv"
+	"runtime"
 
 	rt "github.com/dancannon/gorethink"
 )
@@ -51,7 +52,6 @@ func insertRT(session *rt.Session, table string, data []interface{}) {
 		fmt.Println()
 		fmt.Println("Write Error: ", err.Error())
 	}
-
 	//	fmt.Println("Inserted: ", resp.Inserted)
 }
 
@@ -145,6 +145,8 @@ func InsertTxRt() {
 }
 
 func InsertBlocksRt() {
+
+	runtime.GOMAXPROCS(20)
 
 	session := openRT()
 	defer session.Close()

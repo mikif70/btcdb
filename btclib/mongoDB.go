@@ -4,11 +4,12 @@ package btclib
 import (
 	"fmt"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"time"
 )
 
 func openDB() (*mgo.Session, *mgo.Collection, *mgo.Collection) {
-	session, err := mgo.Dial(MongoD)
+	session, err := mgo.Dial(Mongo[0])
 	if err != nil {
 		panic(err)
 	}
@@ -36,6 +37,19 @@ func startStop(db *mgo.Collection) (int, int) {
 	//	stop = start + 1000
 
 	return start, stop
+}
+
+func checkCount(count int, db *mgo.Collection) bool {
+	found, err := db.Find(bson.M{"count": count}).Count()
+	if err != nil {
+		fmt.Printf("Error found: %v\n", count)
+		return false
+	}
+	if found <= 0 {
+		return false
+		fmt.Printf("Not Found: %v\n", count)
+	}
+	return true
 }
 
 func endLog(db *mgo.Collection, startTime time.Time) {

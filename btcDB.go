@@ -36,6 +36,8 @@ func main() {
 		fmt.Printf("TX of %s: %s\n", *opt, btclib.GetTransaction(opt))
 	case "alltx":
 		btclib.AllTxInsert()
+	case "block":
+		btclib.BlockInsert(*opt)
 	case "blocktx":
 		btclib.BlockTxInsert()
 	case "rttest":
@@ -45,8 +47,8 @@ func main() {
 	case "rttx":
 		btclib.InsertTxRt()
 	case "blockverify":
-		btclib.BlockVerifyRt()
+		btclib.BlockVerify()
 	default:
-		btclib.BlockInsert()
+		btclib.BlockInsert("")
 	}
 }

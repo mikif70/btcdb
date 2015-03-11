@@ -22,7 +22,7 @@ func TxInsert(tx string) {
 }
 */
 
-func txInsert(db *mgo.Collection, count int, data ...[]interface{}) {
+func txInsert(db *mgo.Collection, count int, time float64, data ...[]interface{}) {
 	tot := len(data[0])
 	txs := make([]interface{}, 0)
 	var retval = make(map[string]interface{})
@@ -33,21 +33,23 @@ func txInsert(db *mgo.Collection, count int, data ...[]interface{}) {
 			continue
 		}
 		retval["count"] = count
+		retval["time"] = time
 		txs = append(txs, retval)
 	}
 	if len(txs) > 0 {
-		err := db.Insert(txs...)
-		if err != nil {
-			fmt.Println("Error tx insert: ", err)
-			fmt.Println(data)
-		}
+		go func() {
+			err := db.Insert(txs...)
+			if err != nil {
+				fmt.Println("Error tx insert: ", err)
+				fmt.Println(data)
+			}
+		}()
 	}
 }
 
 func AllTxInsert() {
 
 	session, db, tx := openDB()
-
 	defer session.Close()
 
 	var rettx map[string]interface{}
@@ -77,7 +79,7 @@ func AllTxInsert() {
 		//		var tot = len(arr)
 		//		for a := 0; a < tot; a++ {
 		//			TxInsert(arr[a].(string))
-		txInsert(tx, i, arr)
+		txInsert(tx, i, block["time"].(float64), arr)
 		//		}
 		fmt.Print(".")
 	}

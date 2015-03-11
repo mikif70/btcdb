@@ -60,6 +60,10 @@ func GetTransaction(tx interface{}) map[string]interface{} {
 	params[0] = rettx.(string)
 	var strtx, _ = callCmd("decoderawtransaction", params)
 	//	fmt.Println(strtx)
+	if strtx == nil {
+		fmt.Println("Error decoderaw: ", params, err)
+		return nil
+	}
 
 	return strtx.(map[string]interface{})
 	//	return strtx

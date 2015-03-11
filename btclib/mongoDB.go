@@ -5,17 +5,21 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"strings"
 	"time"
 )
 
 func openDB() (*mgo.Session, *mgo.Collection, *mgo.Collection) {
-	session, err := mgo.Dial(Mongo[0])
+	mongoList := "mongodb://"
+	mongoList = mongoList + strings.Join(Mongo, ",")
+	fmt.Println("Mongo: ", mongoList)
+	session, err := mgo.Dial(mongoList)
 	if err != nil {
 		panic(err)
 	}
 
-	db := session.DB("btc").C("block")
-	tx := session.DB("btc").C("tx")
+	db := session.DB("btc").C("blocks")
+	tx := session.DB("btc").C("txs")
 
 	return session, db, tx
 }
@@ -23,8 +27,12 @@ func openDB() (*mgo.Session, *mgo.Collection, *mgo.Collection) {
 func startStop(db *mgo.Collection) (int, int) {
 	var blockCount, _ = callCmd("getblockcount", make([]int, 0))
 
+	fmt.Println("Block: ", blockCount)
+
 	var retval map[string]interface{}
-	db.Find(nil).Sort("-count").One(&retval)
+	db.Find(nil).Sort("-count").Limit(1).One(&retval)
+
+	fmt.Println("Count: ", retval)
 
 	var start int
 	if retval != nil {

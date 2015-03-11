@@ -42,7 +42,6 @@ func BlockInsert(opt string) {
 	var startTime = time.Now()
 
 	params := make([]interface{}, 1)
-	//	blocks := make([]interface{}, 0)
 	for i := start; i < stop; i++ {
 		params[0] = i
 		if checkCount(i, db) {
@@ -64,27 +63,13 @@ func BlockInsert(opt string) {
 		newBlock["count"] = int(i)
 		go func() {
 			err := db.Insert(newBlock)
-			//		blocks = append(blocks, newBlock)
-			//		if len(blocks) >= maxBulk {
-			//		err := db.Insert(blocks...)
-			//err := db.Insert(newBlock)
 			if err != nil {
 				fmt.Println("")
 				fmt.Println("Error block insert: ", i, err)
 			}
 		}()
-		//		blocks = make([]interface{}, 0)
-		//		}
 		fmt.Print(".")
 	}
-	//	if len(blocks) > 0 {
-	//		err := db.Insert(blocks...)
-	//		if err != nil {
-	//			fmt.Println("")
-	//			fmt.Println("Error block insert: ", err)
-	//		}
-	//		blocks = make([]interface{}, 0)
-	//	}
 	fmt.Println("")
 
 	endLog(db, startTime)
@@ -117,7 +102,7 @@ func BlockTxInsert() {
 
 		//		var tot = len(arr)
 		//		for a := 0; a < tot; a++ {
-		txInsert(tx, i, arr)
+		txInsert(tx, i, newBlock["time"].(float64), arr)
 		//		}
 		fmt.Print(".")
 	}
